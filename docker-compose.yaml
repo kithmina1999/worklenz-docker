@@ -3,15 +3,15 @@ services:
     image: docker.io/kithceydigital/worklenz_frontend:latest
     container_name: worklenz_frontend
     ports:
-      - "5000:5000"  # Updated port to match new frontend
+      - "5000:5000"
     depends_on:
       backend:
         condition: service_started
     networks:
-      - worklenz    
+      - worklenz
 
   backend:
-    image: docker.io/kithceydigital/worklenz_backend:latest
+    image: docker.io/kithceydigital/worklenz_backend:react
     container_name: worklenz_backend
     ports:
       - "3000:3000"
@@ -51,27 +51,29 @@ services:
       - S3_ACCESS_KEY_ID
       - S3_SECRET_ACCESS_KEY
     networks:
-      - worklenz  
+      - worklenz
 
-  db:
-    image: postgres:15
-    container_name: worklenz_db
-    environment:
-      POSTGRES_DB: "${DB_NAME}"
-      POSTGRES_PASSWORD: "${DB_PASSWORD}"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d ${DB_NAME} -U ${DB_USER}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - worklenz  
-    volumes:
-      - worklenz_postgres_data:/var/lib/postgresql/data
-      - ./worklenz-backend/database/:/docker-entrypoint-initdb.d
+db:
+  image: postgres:15
+  container_name: worklenz_db
+  environment:
+    POSTGRES_USER: ${DB_USER}
+    POSTGRES_DB: ${DB_NAME}
+    POSTGRES_PASSWORD: ${DB_PASSWORD}
+  healthcheck:
+    test: [ "CMD-SHELL", "pg_isready -d ${DB_NAME} -U ${DB_USER}" ]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+  networks:
+    - worklenz
+  volumes:
+    - worklenz_postgres_data:/var/lib/postgresql/data
+    - ./worklenz-backend/database/:/docker-entrypoint-initdb.d
 
 volumes:
   worklenz_postgres_data:
+
 
 networks:
   worklenz:
